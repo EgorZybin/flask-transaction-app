@@ -1,0 +1,150 @@
+openapi: 3.0.0
+info:
+  title: Flask Transaction API
+  description: API для работы с пользователями и транзакциями
+  version: 1.0.0
+  contact:
+    name: Developer
+    email: developer@example.com
+paths:
+  /create_transaction:
+    post:
+      summary: Создать новую транзакцию
+      description: Создает транзакцию с расчетом комиссии
+      operationId: createTransaction
+      requestBody:
+        description: Тело запроса для создания транзакции
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: float
+                  description: Сумма транзакции
+                user_id:
+                  type: integer
+                  description: ID пользователя
+              required:
+                - amount
+                - user_id
+      responses:
+        '201':
+          description: Транзакция успешно создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transaction_id:
+                    type: integer
+                    description: ID созданной транзакции
+                  amount:
+                    type: number
+                    format: float
+                    description: Сумма транзакции
+                  commission:
+                    type: number
+                    format: float
+                    description: Комиссия, вычисленная для транзакции
+        '400':
+          description: Неверный запрос
+
+  /cancel_transaction:
+    post:
+      summary: Отменить транзакцию
+      description: Отменяет транзакцию, если она еще не была подтверждена
+      operationId: cancelTransaction
+      requestBody:
+        description: Тело запроса для отмены транзакции
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id:
+                  type: integer
+                  description: ID транзакции
+              required:
+                - transaction_id
+      responses:
+        '200':
+          description: Транзакция успешно отменена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Статус транзакции
+        '400':
+          description: Транзакция не найдена или уже изменена
+
+  /check_transaction:
+    get:
+      summary: Проверить статус транзакции
+      description: Проверяет статус транзакции по ID
+      operationId: checkTransaction
+      parameters:
+        - name: transaction_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            description: ID транзакции
+      responses:
+        '200':
+          description: Статус транзакции
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transaction_id:
+                    type: integer
+                    description: ID транзакции
+                  status:
+                    type: string
+                    description: Статус транзакции
+        '404':
+          description: Транзакция не найдена
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        balance:
+          type: number
+          format: float
+        commission_rate:
+          type: number
+          format: float
+        role:
+          type: string
+          enum:
+            - user
+            - admin
+
+    Transaction:
+      type: object
+      properties:
+        transaction_id:
+          type: integer
+        amount:
+          type: number
+          format: float
+        commission:
+          type: number
+          format: float
+        status:
+          type: string
+          enum:
+            - pending
+            - confirmed
+            - canceled
+            - expired
